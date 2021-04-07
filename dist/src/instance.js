@@ -33,6 +33,7 @@ const createInstance = ({ app, server, options }) => {
         config: customConfig
     });
     wss.on("connection", (client) => {
+        console.info("createInstance connection", client);
         const messageQueue = realm.getMessageQueueById(client.getId());
         if (messageQueue) {
             let message;

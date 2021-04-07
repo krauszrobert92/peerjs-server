@@ -10,7 +10,7 @@ type Optional<T> = {
   [P in keyof T]?: (T[P] | undefined);
 };
 
-function ExpressPeerServer(server: Server, options?: IConfig) {
+function ExpressPeerServer(server: Server, options?: IConfig, createInstanceWithoutMounting = false) {
   const app = express();
 
   const newOptions: IConfig = {
@@ -22,14 +22,21 @@ function ExpressPeerServer(server: Server, options?: IConfig) {
     app.set("trust proxy", newOptions.proxied === "false" ? false : !!newOptions.proxied);
   }
 
-  app.on("mount", () => {
-    if (!server) {
-      throw new Error("Server is not passed to constructor - " +
-        "can't start PeerServer");
-    }
-
+  if (createInstanceWithoutMounting) {
     createInstance({ app, server, options: newOptions });
-  });
+
+  } else {
+    app.on("mount", () => {
+      if (!server) {
+        throw new Error("Server is not passed to constructor - " +
+          "can't start PeerServer");
+      }
+
+      createInstance({ app, server, options: newOptions });
+    });
+  }
+
+
 
   return app;
 }

@@ -20,19 +20,24 @@ const http_1 = __importDefault(require("http"));
 const https_1 = __importDefault(require("https"));
 const config_1 = __importDefault(require("./config"));
 const instance_1 = require("./instance");
-function ExpressPeerServer(server, options) {
+function ExpressPeerServer(server, options, createInstanceWithoutMounting = false) {
     const app = express_1.default();
     const newOptions = Object.assign(Object.assign({}, config_1.default), options);
     if (newOptions.proxied) {
         app.set("trust proxy", newOptions.proxied === "false" ? false : !!newOptions.proxied);
     }
-    app.on("mount", () => {
-        if (!server) {
-            throw new Error("Server is not passed to constructor - " +
-                "can't start PeerServer");
-        }
+    if (createInstanceWithoutMounting) {
         instance_1.createInstance({ app, server, options: newOptions });
-    });
+    }
+    else {
+        app.on("mount", () => {
+            if (!server) {
+                throw new Error("Server is not passed to constructor - " +
+                    "can't start PeerServer");
+            }
+            instance_1.createInstance({ app, server, options: newOptions });
+        });
+    }
     return app;
 }
 exports.ExpressPeerServer = ExpressPeerServer;
